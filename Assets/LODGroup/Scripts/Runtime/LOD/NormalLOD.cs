@@ -2,7 +2,7 @@ namespace Chess.LODGroupIJob
 {
     public static class NormalLOD
     {
-        //Õý³£Ä£Ê½Ö»ÓÐÏÔÊ¾ºÍÒþ²Ø
+        //ï¿½ï¿½ï¿½ï¿½Ä£Ê½Ö»ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         public static void SetState(bool active, LOD lod, LODGroup lodGroup, int willLOD = -1)
         {
             switch (lod.CurrentState)
@@ -40,7 +40,7 @@ namespace Chess.LODGroupIJob
             {
                 var colliders = lod.Colliers;
                 count = renderers.Length;
-                for (int i = 0; i < count; i++)
+                for (int i = 0; i < count && i < colliders.Length; i++)
                 {
                     var c = colliders[i];
                     if (c != null)

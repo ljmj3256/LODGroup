@@ -1,38 +1,31 @@
 using System.IO;
 using UnityEngine;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
+
 namespace Chess.LODGroupIJob.Utils
 {
-    public class Config : ScriptableObject
+    public class LODSystemConfig
     {
-        //流式加载可同时进入异步加载的资源数量
-        public int asynLoadNum = 4;
-
-        //间隔计算屏占比
-        public float cullInterval = 0.1f;
-
-        //是否在编辑器模式Game视图下启动流式加载
-        public bool editorStream = false;
-    }
-    public class SystemConfig
-    {
-        static SystemConfig _Instance;
-        public static SystemConfig Instance
+        static LODSystemConfig _Instance;
+        public static LODSystemConfig Instance
         {
             get
             {
                 if (_Instance == null)
                 {
-                    _Instance = new SystemConfig();
+                    _Instance = new LODSystemConfig();
                 }
                 return _Instance;
             }
         }
+
         Config m_Config;
         static string s_ConfigAdress = "Config/";
-        static string s_Name = "chess";
+        static string s_Name = "LODGlobalConfig";
+
         public void RefreshConfig()
         {
             m_Config = Resources.Load<Config>(s_ConfigAdress + s_Name);

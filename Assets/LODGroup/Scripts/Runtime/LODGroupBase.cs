@@ -30,7 +30,7 @@ namespace Chess.LODGroupIJob
         protected LOD[] m_LODs;
         protected int m_CurrentLOD = -1;
         protected int m_LoadingLOD = -1;
-        //LODGroup包围盒大小，包围盒永远都是正方体
+        //LODGroup鍖呭洿鐩掑ぇ灏忥紝鍖呭洿鐩掓案杩滈兘鏄鏂逛綋
         public float size { get => Mathf.Max(m_Bounds.size); }
         public Bounds Bounds { get => m_Bounds; set => m_Bounds = value; }
 #if UNITY_EDITOR
@@ -49,7 +49,7 @@ namespace Chess.LODGroupIJob
             }
         }
 #endif
-        public virtual void UpdataState(JobResult calResult, CameraType type) { }
+        public virtual void UpdateState(JobResult calResult, CameraType type) { }
         public virtual void SetLODs(LOD[] lods)
         {
             LODGroupManager.Instance.Dirty = true;

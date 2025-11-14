@@ -1,5 +1,4 @@
 using Chess.LODGroupIJob.Streaming;
-using Chess.LODGroupIJob.Utils;
 using System;
 using UnityEngine;
 
@@ -15,36 +14,39 @@ namespace Chess.LODGroupIJob
         Failed
     }
 
-    //²»Ê¹ÓÃ¼Ì³ĞÔ­Òò³éÏóÀàÎŞ·¨ĞòÁĞ»¯£¬¶øScriptableObject»áÔÚ¿½±´µÄÊ±ºòÒıÓÃ²»±äÂé·³
+    //ä¸ä½¿ç”¨ç»§æ‰¿åŸå› æŠ½è±¡ç±»æ— æ³•åºåˆ—åŒ–ï¼Œè€ŒScriptableObjectä¼šåœ¨æ‹·è´çš„æ—¶å€™å¼•ç”¨ä¸å˜éº»çƒ¦
     [Serializable]
     public sealed class LOD
     {
-        //ÔÚÆÁÄ»ÉÏÕ¼±È¸ß¶È[0-1]
+        //åœ¨å±å¹•ä¸Šå æ¯”é«˜åº¦[0-1]
         [SerializeField]
         private float screenRelativeTransitionHeight;
-        //µ±Ç°¹ÜÀíµÄRenderer
+        //å½“å‰ç®¡ç†çš„Renderer
         [SerializeField]
         private Renderer[] m_Renderers;
         [SerializeField]
         private Collider[] m_Colliers;
-        //µ±Ç°×´Ì¬
+        //å½“å‰çŠ¶æ€
         [SerializeField]
         private State m_CurrentState;
-        //ÉÏÒ»Ö¡×´Ì¬
+        //ä¸Šä¸€å¸§çŠ¶æ€
         [SerializeField]
         private State m_LastState;
-        #region Á÷Ê½¼ÓÔØ
-        //ÊÇ·ñÁ÷Ê½
 
+        #region æµå¼åŠ è½½
+
+        //æ˜¯å¦æµå¼
         [SerializeField]
         private bool m_Streaming;
         [SerializeField]
         private string address;
         [SerializeField]
         private int priority;
-        [SerializeField]
+        [NonSerialized]
         private Handle handle;
+
         #endregion
+
         public LOD(float screenRelative)
         {
             screenRelativeTransitionHeight = screenRelative;
@@ -60,7 +62,7 @@ namespace Chess.LODGroupIJob
         public int Priority { get => priority; set => priority = value; }
         public Handle Handle { get => handle; set => handle = value; }
 
-        //·µ»Øtrue±íÊ¾¸Õ¼ÓÔØÍê³É£¬·ñÔò·µ»Øfalse
+        //è¿”å›trueè¡¨ç¤ºåˆšåŠ è½½å®Œæˆï¼Œå¦åˆ™è¿”å›false
         public bool SetState(bool active, LODGroup lodGroup, float distance, int willLOD = -1)
         {
             if(m_Streaming)

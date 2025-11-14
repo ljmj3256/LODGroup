@@ -4,7 +4,7 @@ namespace Chess.LODGroupIJob
 {
     public static class StreamingLOD
     {
-        //Õı³£Ä£Ê½Ö»ÓĞÏÔÊ¾ºÍÒş²Ø
+        //æ­£å¸¸æ¨¡å¼åªæœ‰æ˜¾ç¤ºå’Œéšè—
         public static bool SetState(bool active, LOD lod, LODGroup lodGroup, float distance, int willLOD = -1)
         {
             bool onceLoaded = false;
@@ -55,7 +55,6 @@ namespace Chess.LODGroupIJob
                     h.Controller.CurrentState = State.Failed;
                     return;
                 }
-
               
                 GameObject gameObject = GameObject.Instantiate(h.Result, lodGroup.transform, false);
                 h.Result = gameObject;

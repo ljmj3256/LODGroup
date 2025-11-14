@@ -8,11 +8,11 @@ namespace Chess.LODGroupIJob.Interface
     {
         public Singleton()
         {
-            LoadAseetManager<ILoadAsset>.Instance.loadAsset = this as ILoadAsset;
+            LoadAssetManager<ILoadAsset>.Instance.loadAsset = this as ILoadAsset;
         }
         ~Singleton()
         {
-            LoadAseetManager<ILoadAsset>.Instance.loadAsset = null;
+            LoadAssetManager<ILoadAsset>.Instance.loadAsset = null;
         }
     }
 }

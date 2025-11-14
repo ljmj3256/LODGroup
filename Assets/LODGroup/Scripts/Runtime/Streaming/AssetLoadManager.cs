@@ -21,16 +21,18 @@ namespace Chess.LODGroupIJob.Streaming
             }
         }
         #endregion
-        public AssetLoadManager()
+
+        private AssetLoadManager()
         {
-            m_Config = SystemConfig.Instance;
+            m_Config = LODSystemConfig.Instance;
         }
-        private SystemConfig m_Config;
+
+        private LODSystemConfig m_Config;
         private int m_LoadCount = 0;
         private bool m_IsLoading = false;
         private LinkedList<Handle> m_loadQueue = new LinkedList<Handle>();
 
-        //¿ªÊ¼¼ÓÔØ
+        //å¼€å§‹åŠ è½½
         public Handle LoadAsset(LOD controller, string address, int priority, float distance)
         {
             Handle handle = new Handle(controller, address, priority, distance);
@@ -40,14 +42,14 @@ namespace Chess.LODGroupIJob.Streaming
         {
             InsertHandle(handle);
         }
-        //Ğ¶ÔØ
+        //å¸è½½
         public void UnloadAsset(Handle handle)
         {
             m_loadQueue.Remove(handle);
             handle.UnloadAsset();
         }
 
-        //¼ÓÔØ¶ÓÁĞ´¦Àí
+        //åŠ è½½é˜Ÿåˆ—å¤„ç†
         private void InsertHandle(Handle handle)
         {
             var node = m_loadQueue.First;
@@ -78,7 +80,7 @@ namespace Chess.LODGroupIJob.Streaming
             }
         }
 
-        //ÕıÊ½¼ÓÔØ
+        //æ­£å¼åŠ è½½
         private void StartLoad(Handle handle)
         {
             handle.Completed += handle1 =>
@@ -97,7 +99,7 @@ namespace Chess.LODGroupIJob.Streaming
 
             if (result)
             {
-                if (++m_LoadCount == m_Config.Config.asynLoadNum)
+                if (++m_LoadCount == m_Config.Config.asyncLoadNum)
                 {
                     m_IsLoading = true;
                     return;
@@ -105,7 +107,7 @@ namespace Chess.LODGroupIJob.Streaming
                     
             }
 
-            //¼ÓÔØÊıÁ¿Ã»´ïµ½Éè¶¨¼ÌĞø¼ÓÔØ
+            //åŠ è½½æ•°é‡æ²¡è¾¾åˆ°è®¾å®šç»§ç»­åŠ è½½
             if (m_loadQueue.Count == 0)
                 return;
             Handle nextHandle = m_loadQueue.First.Value;

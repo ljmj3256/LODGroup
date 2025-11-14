@@ -24,7 +24,7 @@ namespace Chess.LODGroupIJob
                 return;
             if (m_SlideCursor.Slide)
             {
-                //在拖动滑动条上的相机
+                //鍦ㄦ嫋鍔ㄦ粦鍔ㄦ潯涓婄殑鐩告満
                 Camera camera = SceneView.camera;
     
                 QuadTreeSpaceManager.SettingReCamera(SceneView.camera, out m_PreRelative);

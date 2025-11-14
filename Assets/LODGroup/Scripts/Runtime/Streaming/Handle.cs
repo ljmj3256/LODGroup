@@ -24,13 +24,15 @@ namespace Chess.LODGroupIJob.Streaming
         private AsyncOperationStatus m_Status;
         private uint m_Id;
         private GameObject m_Obj;
-        #region AssetLoadManagerÊ¹ÓÃ
+
+        #region AssetLoadManagerä½¿ç”¨
+
         public int Priority { get => m_Priority; }
-
         public float Distance { get => m_Distance; }
-
         public LOD Controller { get => m_Controller; }
+
         #endregion
+
         public AsyncOperationStatus Status
         {
             get
@@ -53,10 +55,10 @@ namespace Chess.LODGroupIJob.Streaming
             m_Distance = distance;
         }
 
-        //¿ªÊ¼
+        //å¼€å§‹
         public bool Start()
         {
-            var load = LoadAseetManager<ILoadAsset>.Instance.loadAsset;
+            var load = LoadAssetManager<ILoadAsset>.Instance.loadAsset;
             //Debug.Log(load);
             if (load == null)
                 return false;
@@ -72,12 +74,12 @@ namespace Chess.LODGroupIJob.Streaming
             return true;
         }
 
-        //½áÊø
+        //ç»“æŸ
         public void UnloadAsset()
         {
             if (m_StartLoad == true)
             {
-                var load = LoadAseetManager<ILoadAsset>.Instance.loadAsset;
+                var load = LoadAssetManager<ILoadAsset>.Instance.loadAsset;
                 if (load == null)
                     return;
                 load.UnloadAsset(Id);

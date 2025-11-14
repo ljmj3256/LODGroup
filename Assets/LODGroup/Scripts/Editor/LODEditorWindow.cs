@@ -16,8 +16,8 @@ namespace Chess.LODGroupIJob
             headerStyle = new GUIStyle(EditorStyles.toolbar);
             headerStyle.fontStyle = FontStyle.Bold;
             headerStyle.alignment = center ? TextAnchor.MiddleCenter : TextAnchor.MiddleLeft;
-            GUIStyle searchBoxStyle = GUI.skin.FindStyle("ToolbarSeachTextField");
-            GUIStyle searchCancelStyle = GUI.skin.FindStyle("ToolbarSeachCancelButton");
+            GUIStyle searchBoxStyle = GUI.skin.FindStyle("ToolbarSearchTextField");
+            GUIStyle searchCancelStyle = GUI.skin.FindStyle("ToolbarSearchCancelButton");
             if (center)
             {
                 GUILayout.FlexibleSpace();

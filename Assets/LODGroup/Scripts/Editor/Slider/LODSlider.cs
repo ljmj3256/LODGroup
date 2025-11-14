@@ -132,9 +132,9 @@ namespace Chess.LODGroupIJob.Slider
             }
             return -1;
         }
-        public void Updata(Event curEvent)
+        public void UpdateView(Event curEvent)
         {
-            m_SlideCursor.Updata(curEvent);
+            m_SlideCursor.UpdateView(curEvent);
         }
         public void Draw()
         {

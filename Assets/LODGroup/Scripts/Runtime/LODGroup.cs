@@ -1,15 +1,20 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 using Chess.LODGroupIJob.Utils;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
+
 namespace Chess.LODGroupIJob
 {
     [ExecuteAlways]
     public class LODGroup : LODGroupBase
     {
+#if UNITY_EDITOR
+        [HideInInspector]
+        public Object exportStreamDir;
+#endif
         //基于当前物体的坐标位置
         public Vector3 localReferencePoint { get => m_Bounds.center; set => m_Bounds.center = value; }
         //LOD数量
@@ -51,18 +56,18 @@ namespace Chess.LODGroupIJob
         }
      
         //状态改变
-        public override void UpdataState(JobSystem.JobResult calResult, CameraType type)
+        public override void UpdateState(JobSystem.JobResult calResult, CameraType type)
         {
             if (calResult.lodLevel == m_CurrentLOD && calResult.lodLevel == m_LoadingLOD)
                 return;
 #if UNITY_EDITOR
-            //运行模式如果有流式lod那么scence相机不生效
+            //运行模式如果有流式lod那么scene相机不生效
             if(Application.isPlaying && m_CoverStreamLOD && type != CameraType.Game)
             {
                 return;
             }
             //编辑器模式下启动了流式加载那么也生效
-            if (!Application.isPlaying && (type != CameraType.Game || !SystemConfig.Instance.Config.editorStream))
+            if (!Application.isPlaying && (type != CameraType.Game || !LODSystemConfig.Instance.Config.editorStream))
             {
                 if(calResult.lodLevel != -1)
                     if(m_LODs[calResult.lodLevel].Streaming)

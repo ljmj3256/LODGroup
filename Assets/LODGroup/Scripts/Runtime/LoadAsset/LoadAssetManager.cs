@@ -1,15 +1,15 @@
 namespace Chess.LODGroupIJob.LoadAsset
 {
-    public class LoadAseetManager<T>
+    public class LoadAssetManager<T>
     {
-        static LoadAseetManager<T> _Instance;
-        public static LoadAseetManager<T> Instance
+        static LoadAssetManager<T> _Instance;
+        public static LoadAssetManager<T> Instance
         {
             get
             {
                 if(_Instance == null)
                 {
-                    _Instance = new LoadAseetManager<T>();
+                    _Instance = new LoadAssetManager<T>();
                 }
                 return _Instance;
             }

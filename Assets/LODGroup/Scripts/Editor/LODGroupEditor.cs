@@ -27,8 +27,6 @@ namespace Chess.LODGroupIJob
 
         public LODGroup LODGroup { get => m_LODGroup; set => m_LODGroup = value; }
 
-        //dir
-        Object m_PathDir;
         private void OnEnable()
         {
             m_LODGroup = (LODGroup)target;
@@ -38,12 +36,12 @@ namespace Chess.LODGroupIJob
             FirstAwake();
             RefreshLOD();
 
-            EditorApplication.update -= Updata;
-            EditorApplication.update += Updata;
+            EditorApplication.update -= UpdateView;
+            EditorApplication.update += UpdateView;
         }
         private void OnDestroy()
         {
-            EditorApplication.update -= Updata;
+            EditorApplication.update -= UpdateView;
         }
 
         //第一次创建，刷新LOD数据
@@ -72,23 +70,22 @@ namespace Chess.LODGroupIJob
                 m_LODSlider.InsertRange(LODUtils.kLODNames[i], lods[i]);
             }
         }
-        void Updata()
+        void UpdateView()
         {
-            m_LODSlider.Updata(m_LastEvent);
+            m_LODSlider.UpdateView(m_LastEvent);
         }
         public override void OnInspectorGUI()
         {
             m_LastEvent = Event.current;
             m_SceneCameraManager.OnInspectorGUI();
             m_LODSlider.Draw();
-
             
             EditorGUILayout.BeginHorizontal(GUILayout.Width(300));
             EditorGUILayout.BeginVertical("box", GUILayout.Width(150));
             RefreshAndStreaming();
-            LODStreamingOpreat();
+            LODStreamingOp();
             EditorGUILayout.EndVertical();
-            LODDataOperat();
+            LODDataOp();
             
             EditorGUILayout.EndHorizontal();
 
@@ -97,14 +94,14 @@ namespace Chess.LODGroupIJob
         void RefreshAndStreaming()
         {
             string nullSearch = null;
-            DrawHeader("总操作", ref nullSearch, 0, true);
+            DrawHeader("操作工具", ref nullSearch, 0, true);
             if (GUILayout.Button("刷新包围盒"))
             {
                 m_LODGroup.RecalculateBounds();
                 m_LastEvent.Use();
             }
             EditorGUILayout.BeginHorizontal();
-            if (m_PathDir != null && GUILayout.Button("一件流式加载"))
+            if (m_LODGroup.exportStreamDir != null && GUILayout.Button("一键流式加载"))
             {
                 LOD[] lods = m_LODGroup.GetLODs();
                 for(int i = 0; i < lods.Length; i++)
@@ -115,7 +112,7 @@ namespace Chess.LODGroupIJob
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
             }
-            if (GUILayout.Button("一键退回流式"))
+            if (GUILayout.Button("一键回退流式"))
             {
                 LOD[] lods = m_LODGroup.GetLODs();
                 for (int i = 0; i < lods.Length; i++)
@@ -128,10 +125,11 @@ namespace Chess.LODGroupIJob
             }
             EditorGUILayout.EndHorizontal();
 
-            m_PathDir = EditorGUILayout.ObjectField("流式路径:", m_PathDir, typeof(Object));
+            m_LODGroup.exportStreamDir = EditorGUILayout.ObjectField("流式路径:", m_LODGroup.exportStreamDir, typeof(Object));
         }
+
         //lod的数据
-        void LODDataOperat()
+        void LODDataOp()
         {
             int index = m_LODSlider.SelectedShowIndex;
             if (index == -1)
@@ -207,7 +205,7 @@ namespace Chess.LODGroupIJob
             
         }
        
-        void LODStreamingOpreat()
+        void LODStreamingOp()
         {
             int index = m_LODSlider.SelectedShowIndex;
             if (index == -1)
@@ -225,7 +223,7 @@ namespace Chess.LODGroupIJob
             lod.Priority = EditorGUILayout.IntField("加载优先权重:", lod.Priority);
             if (lod.Streaming)
             {
-                if (GUILayout.Button("退回流式"))
+                if (GUILayout.Button("回退流式"))
                 {
                     ImportLODAsset(index, lod);
                     EditorUtility.SetDirty(m_LODGroup);
@@ -235,7 +233,7 @@ namespace Chess.LODGroupIJob
             }
             else
             {
-                if (m_PathDir != null && GUILayout.Button("流式加载"))
+                if (m_LODGroup.exportStreamDir != null && GUILayout.Button("流式加载"))
                 {
                     ExportLODAsset(index, lod);
                     EditorUtility.SetDirty(m_LODGroup);
@@ -266,7 +264,7 @@ namespace Chess.LODGroupIJob
                 rd.transform.parent = lodObj.transform;
                 rd.enabled = true;
             }
-            string path  = AssetDatabase.GetAssetPath(m_PathDir);
+            string path  = AssetDatabase.GetAssetPath(m_LODGroup.exportStreamDir);
             string savePath = Path.Combine(path, lodObj.name + ".prefab").Replace('\\','/');
             savePath = savePath.Replace("[\\]", "/");
             PrefabUtility.SaveAsPrefabAsset(lodObj, savePath);

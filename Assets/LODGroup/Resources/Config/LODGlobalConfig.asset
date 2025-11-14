@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
-  m_Name: chess
-  m_EditorClassIdentifier: Assembly-CSharp:Chess.LODGroupIJob.Utils:Config
-  asynLoadNum: 4
+  m_Script: {fileID: 11500000, guid: d3eb576564c5bdd46b0d5adb76078101, type: 3}
+  m_Name: LODGlobalConfig
+  m_EditorClassIdentifier: 
+  asyncLoadNum: 4
   cullInterval: 0.1
   editorStream: 0
