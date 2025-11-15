@@ -5,21 +5,22 @@ namespace Chess.LODGroupIJob.Streaming
     public class AssetLoadManager
     {
         #region Singleton
-        private static AssetLoadManager _Instance;
 
+        private static AssetLoadManager _instance;
         public static AssetLoadManager Instance
         {
             get
             {
                 
-                if (_Instance == null)
+                if (_instance == null)
                 {
-                    _Instance = new AssetLoadManager();
+                    _instance = new AssetLoadManager();
                 }
 
-                return _Instance;
+                return _instance;
             }
         }
+
         #endregion
 
         private AssetLoadManager()

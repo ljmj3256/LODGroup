@@ -33,6 +33,7 @@ namespace Chess.LODGroupIJob
         //LODGroup包围盒大小，包围盒永远都是正方体
         public float size { get => Mathf.Max(m_Bounds.size); }
         public Bounds Bounds { get => m_Bounds; set => m_Bounds = value; }
+
 #if UNITY_EDITOR
         GUIStyle e_Style;
         protected GUIStyle Style
@@ -49,6 +50,7 @@ namespace Chess.LODGroupIJob
             }
         }
 #endif
+
         public virtual void UpdateState(JobResult calResult, CameraType type) { }
         public virtual void SetLODs(LOD[] lods)
         {

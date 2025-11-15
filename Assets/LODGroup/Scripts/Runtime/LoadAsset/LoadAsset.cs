@@ -5,16 +5,6 @@ using UnityEngine;
 
 namespace Chess.LODGroupIJob.LoadAsset
 {
-    [ExecuteAlways]
-    public class ResourcesLoadAsset : MonoBehaviour
-    {
-        LoadAsset m_LoadAsset;
-        private void Awake()
-        {
-            m_LoadAsset = new LoadAsset();
-        }
-    }
-
     public class LoadAsset : ILoadAsset
     {
         uint id = 0;

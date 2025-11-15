@@ -141,30 +141,31 @@ namespace Chess.LODGroupIJob.JobSystem
     }
     public class LODGroupManager
     {
-        static LODGroupManager _Instance;
+        static LODGroupManager _instance;
         public static LODGroupManager Instance
         {
             get
             {
-                if (_Instance == null)
+                if (_instance == null)
                 {
-                    _Instance = new LODGroupManager();
-                    _Instance.m_Config = LODSystemConfig.Instance;
+                    _instance = new LODGroupManager();
+                    _instance.m_Config = LODSystemConfig.Instance;
 
-                    Camera.onPreCull += _Instance.OnPreCull;
+                    Camera.onPreCull += _instance.OnPreCull;
                 }
-                return _Instance;
+                return _instance;
             }
         }
 
         private Camera m_MainCamera;
-        public LODSystemConfig m_Config;
+        private LODSystemConfig m_Config;
 
-        HashSet<LODGroupBase> m_AllLODGroup = new HashSet<LODGroupBase>();
+        private HashSet<LODGroupBase> m_AllLODGroup = new HashSet<LODGroupBase>();
 
         private JobValueMode m_JobValueMode;
         private JobValueView m_JobValueView;
         private bool m_Dirty = false;
+
         public Camera MainCamera
         {
             get
@@ -209,7 +210,6 @@ namespace Chess.LODGroupIJob.JobSystem
             return result;
         }
 
-        static Unity.Profiling.ProfilerMarker p = new Unity.Profiling.ProfilerMarker("LODGroupCalulate");
         private void OnPreCull(Camera camera)
         {
 #if UNITY_EDITOR
@@ -271,16 +271,14 @@ namespace Chess.LODGroupIJob.JobSystem
                 Dirty = true;
             }
 #endif
-            if (!Dirty)
-                return;
-                
+            if (!Dirty) return;
             
             if(Dirty)
             {
                 Dirty = false;
                 m_JobValueView.AfreshCalculate(ref m_JobValueMode, ref m_AllLODGroup);
-                
             }
+
             if (!m_JobValueMode.vaild)
                 return;
 

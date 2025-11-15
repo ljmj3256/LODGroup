@@ -9,16 +9,16 @@ namespace Chess.LODGroupIJob.Utils
 {
     public class LODSystemConfig
     {
-        static LODSystemConfig _Instance;
+        static LODSystemConfig _instance;
         public static LODSystemConfig Instance
         {
             get
             {
-                if (_Instance == null)
+                if (_instance == null)
                 {
-                    _Instance = new LODSystemConfig();
+                    _instance = new LODSystemConfig();
                 }
-                return _Instance;
+                return _instance;
             }
         }
 

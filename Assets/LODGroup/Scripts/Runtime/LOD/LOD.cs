@@ -26,11 +26,12 @@ namespace Chess.LODGroupIJob
         private Renderer[] m_Renderers;
         [SerializeField]
         private Collider[] m_Colliers;
+
         //当前状态
-        [SerializeField]
+        [NonSerialized]
         private State m_CurrentState;
         //上一帧状态
-        [SerializeField]
+        [NonSerialized]
         private State m_LastState;
 
         #region 流式加载
@@ -42,6 +43,7 @@ namespace Chess.LODGroupIJob
         private string address;
         [SerializeField]
         private int priority;
+
         [NonSerialized]
         private Handle handle;
 
