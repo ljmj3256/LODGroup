@@ -22,7 +22,7 @@ namespace Chess.LODGroupIJob
 
         Event m_LastEvent;
 
-        //½«ÒªÉ¾³ıµÄrenderer
+        //å°†è¦åˆ é™¤çš„renderer
         List<Renderer> m_WillDelete;
 
         public LODGroup LODGroup { get => m_LODGroup; set => m_LODGroup = value; }
@@ -44,7 +44,7 @@ namespace Chess.LODGroupIJob
             EditorApplication.update -= UpdateView;
         }
 
-        //µÚÒ»´Î´´½¨£¬Ë¢ĞÂLODÊı¾İ
+        //ç¬¬ä¸€æ¬¡åˆ›å»ºï¼Œåˆ·æ–°LODæ•°æ®
         void FirstAwake()
         {
             if (m_LODGroup.lodCount == 0)
@@ -60,7 +60,7 @@ namespace Chess.LODGroupIJob
                 m_LODGroup.RecalculateBounds();
             }
         }
-        //Ë¢ĞÂlod¿ò
+        //åˆ·æ–°lodæ¡†
         public void RefreshLOD()
         {
             m_LODSlider.ClearRange();
@@ -90,18 +90,18 @@ namespace Chess.LODGroupIJob
             EditorGUILayout.EndHorizontal();
 
         }
-        //Ë¢ĞÂ°üÎ§ºÍºÍÁ÷Ê½²Ù×÷
+        //åˆ·æ–°åŒ…å›´å’Œå’Œæµå¼æ“ä½œ
         void RefreshAndStreaming()
         {
             string nullSearch = null;
-            DrawHeader("²Ù×÷¹¤¾ß", ref nullSearch, 0, true);
-            if (GUILayout.Button("Ë¢ĞÂ°üÎ§ºĞ"))
+            DrawHeader("æ“ä½œå·¥å…·", ref nullSearch, 0, true);
+            if (GUILayout.Button("åˆ·æ–°åŒ…å›´ç›’"))
             {
                 m_LODGroup.RecalculateBounds();
                 m_LastEvent.Use();
             }
             EditorGUILayout.BeginHorizontal();
-            if (m_LODGroup.exportStreamDir != null && GUILayout.Button("Ò»¼üÁ÷Ê½¼ÓÔØ"))
+            if (m_LODGroup.exportStreamDir != null && GUILayout.Button("ä¸€é”®æµå¼åŠ è½½"))
             {
                 LOD[] lods = m_LODGroup.GetLODs();
                 for(int i = 0; i < lods.Length; i++)
@@ -112,7 +112,7 @@ namespace Chess.LODGroupIJob
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
             }
-            if (GUILayout.Button("Ò»¼ü»ØÍËÁ÷Ê½"))
+            if (GUILayout.Button("ä¸€é”®å›é€€æµå¼"))
             {
                 LOD[] lods = m_LODGroup.GetLODs();
                 for (int i = 0; i < lods.Length; i++)
@@ -125,10 +125,10 @@ namespace Chess.LODGroupIJob
             }
             EditorGUILayout.EndHorizontal();
 
-            m_LODGroup.exportStreamDir = EditorGUILayout.ObjectField("Á÷Ê½Â·¾¶:", m_LODGroup.exportStreamDir, typeof(Object));
+            m_LODGroup.exportStreamDir = EditorGUILayout.ObjectField("æµå¼è·¯å¾„:", m_LODGroup.exportStreamDir, typeof(Object), false);
         }
 
-        //lodµÄÊı¾İ
+        //lodçš„æ•°æ®
         void LODDataOp()
         {
             int index = m_LODSlider.SelectedShowIndex;
@@ -137,12 +137,12 @@ namespace Chess.LODGroupIJob
 
             string nullSearch = null;
             
-            //°üÎ§ºĞÓĞ±ä£¬ĞèÒªË¢ĞÂ
+            //åŒ…å›´ç›’æœ‰å˜ï¼Œéœ€è¦åˆ·æ–°
             if (m_LODSlider.RefreshBounds)
             {
                 m_LODGroup.RecalculateBounds();
             }
-            //¿ò¿ò»¬¶¯ÌõÓĞËù±ä¶¯£¬ĞèÒªË¢ĞÂjobÊı¾İ
+            //æ¡†æ¡†æ»‘åŠ¨æ¡æœ‰æ‰€å˜åŠ¨ï¼Œéœ€è¦åˆ·æ–°jobæ•°æ®
             if(m_LODSlider.RefreshDrag)
             {
                 LODGroupManager.Instance.Dirty = true;
@@ -161,7 +161,7 @@ namespace Chess.LODGroupIJob
             if (lods[index].Renderers == null)
                 return;
 
-            //»­Ã¿¸öLODÉÏµÄÎïÌå
+            //ç”»æ¯ä¸ªLODä¸Šçš„ç‰©ä½“
             renderers.AddRange(lods[index].Renderers);
             
             EditorGUILayout.BeginVertical("box");
@@ -169,10 +169,10 @@ namespace Chess.LODGroupIJob
             {
                 DrawHeader("Renderers", ref nullSearch, 0, true);
                 m_WillDelete.Clear();
-                //ÏÔÊ¾ÔÚLODÄÚµÄRenderer
+                //æ˜¾ç¤ºåœ¨LODå†…çš„Renderer
                 foreach (var renderer in renderers)
                 {
-                    var obj = EditorGUILayout.ObjectField(renderer, typeof(GameObject), GUILayout.Width(150));
+                    var obj = EditorGUILayout.ObjectField(renderer, typeof(GameObject), true, GUILayout.Width(150));
                     if (obj == null)
                     {
                         m_WillDelete.Add(renderer);
@@ -220,10 +220,10 @@ namespace Chess.LODGroupIJob
             GUILayout.FlexibleSpace();
             EditorGUILayout.BeginVertical();
 
-            lod.Priority = EditorGUILayout.IntField("¼ÓÔØÓÅÏÈÈ¨ÖØ:", lod.Priority);
+            lod.Priority = EditorGUILayout.IntField("åŠ è½½ä¼˜å…ˆæƒé‡:", lod.Priority);
             if (lod.Streaming)
             {
-                if (GUILayout.Button("»ØÍËÁ÷Ê½"))
+                if (GUILayout.Button("å›é€€æµå¼"))
                 {
                     ImportLODAsset(index, lod);
                     EditorUtility.SetDirty(m_LODGroup);
@@ -233,7 +233,7 @@ namespace Chess.LODGroupIJob
             }
             else
             {
-                if (m_LODGroup.exportStreamDir != null && GUILayout.Button("Á÷Ê½¼ÓÔØ"))
+                if (m_LODGroup.exportStreamDir != null && GUILayout.Button("æµå¼åŠ è½½"))
                 {
                     ExportLODAsset(index, lod);
                     EditorUtility.SetDirty(m_LODGroup);
@@ -248,7 +248,7 @@ namespace Chess.LODGroupIJob
             var renderers = lod.Renderers;
             if (renderers == null || renderers.Length == 0)
             {
-                Debug.LogError("LOD:"+ index+ "   Ã»ÓĞRenderers");
+                Debug.LogError("LOD:"+ index+ "   æ²¡æœ‰Renderers");
                 return;
             }
             GameObject lodObj = new GameObject();

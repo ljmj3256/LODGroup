@@ -2,7 +2,7 @@ namespace Chess.LODGroupIJob
 {
     public static class NormalLOD
     {
-        //����ģʽֻ����ʾ������
+        //正常模式只有显示和隐藏
         public static void SetState(bool active, LOD lod, LODGroup lodGroup, int willLOD = -1)
         {
             switch (lod.CurrentState)

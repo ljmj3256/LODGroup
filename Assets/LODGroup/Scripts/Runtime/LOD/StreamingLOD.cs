@@ -4,7 +4,7 @@ namespace Chess.LODGroupIJob
 {
     public static class StreamingLOD
     {
-        //正常模式只有显示和隐藏
+        //流模式加载或卸载
         public static bool SetState(bool active, LOD lod, LODGroup lodGroup, float distance, int willLOD = -1)
         {
             bool onceLoaded = false;

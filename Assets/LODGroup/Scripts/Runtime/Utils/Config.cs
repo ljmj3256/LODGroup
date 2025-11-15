@@ -4,13 +4,13 @@ namespace Chess.LODGroupIJob.Utils
 {
     public class Config : ScriptableObject
     {
-        //Á÷Ê½¼ÓÔØ¿ÉÍ¬Ê±½øÈëÒì²½¼ÓÔØµÄ×ÊÔ´ÊıÁ¿
+        //æµå¼åŠ è½½å¯åŒæ—¶è¿›å…¥å¼‚æ­¥åŠ è½½çš„èµ„æºæ•°é‡
         public int asyncLoadNum = 4;
 
-        //¼ä¸ô¼ÆËãÆÁÕ¼±È
+        //é—´éš”è®¡ç®—å±å æ¯”
         public float cullInterval = 0.1f;
 
-        //ÊÇ·ñÔÚ±à¼­Æ÷Ä£Ê½GameÊÓÍ¼ÏÂÆô¶¯Á÷Ê½¼ÓÔØ
+        //æ˜¯å¦åœ¨ç¼–è¾‘å™¨æ¨¡å¼Gameè§†å›¾ä¸‹å¯åŠ¨æµå¼åŠ è½½
         public bool editorStream = false;
     }
 }
