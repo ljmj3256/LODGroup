@@ -451,32 +451,24 @@ MonoBehaviour:
     m_Renderers:
     - {fileID: 3584117509248967947}
     m_Colliers: []
-    m_CurrentState: 2
-    m_LastState: 2
     m_Streaming: 0
     address: 
     priority: 0
   - screenRelativeTransitionHeight: 0.3
     m_Renderers: []
     m_Colliers: []
-    m_CurrentState: 2
-    m_LastState: 0
     m_Streaming: 1
     address: Assets/LODGroup/Resources/LODGroup2025_11_14 14_42_451.prefab
     priority: 1
   - screenRelativeTransitionHeight: 0.1
     m_Renderers: []
     m_Colliers: []
-    m_CurrentState: 2
-    m_LastState: 0
     m_Streaming: 1
     address: Assets/LODGroup/Resources/LODGroup2025_11_14 14_42_452.prefab
     priority: 2
   - screenRelativeTransitionHeight: 0.039075166
     m_Renderers: []
     m_Colliers: []
-    m_CurrentState: 2
-    m_LastState: 0
     m_Streaming: 1
     address: Assets/LODGroup/Resources/LODGroup2025_11_14 14_42_453.prefab
     priority: 2
@@ -560,7 +552,6 @@ GameObject:
   - component: {fileID: 963194228}
   - component: {fileID: 963194227}
   - component: {fileID: 963194226}
-  - component: {fileID: 963194229}
   - component: {fileID: 963194230}
   m_Layer: 0
   m_Name: Main Camera
@@ -643,18 +634,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &963194229
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 963194225}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e8f66f1647c175f4d8a343bc82b596a9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &963194230
 MonoBehaviour:
   m_ObjectHideFlags: 0
