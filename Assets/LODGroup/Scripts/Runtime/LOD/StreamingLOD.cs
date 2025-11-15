@@ -71,11 +71,11 @@ namespace Chess.LODGroupIJob
         {
 #if UNITY_EDITOR
             if(!Application.isPlaying)
-                GameObject.DestroyImmediate(lod.Handle.Result);
+                Object.DestroyImmediate(lod.Handle.Result);
             else
-                GameObject.Destroy(lod.Handle.Result);
+                Object.Destroy(lod.Handle.Result);
 #else
-            GameObject.Destroy(lod.Handle.Result);
+            Object.Destroy(lod.Handle.Result);
 #endif
 
             AssetLoadManager.Instance.UnloadAsset(lod.Handle);

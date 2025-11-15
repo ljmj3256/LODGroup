@@ -25,6 +25,8 @@ namespace Chess.LODGroupIJob.Streaming
         private uint m_Id;
         private GameObject m_Obj;
 
+        private static readonly ILoadAsset m_Loader = new LoadAsset.LoadAsset();
+
         #region AssetLoadManager使用
 
         public int Priority { get => m_Priority; }
@@ -58,11 +60,8 @@ namespace Chess.LODGroupIJob.Streaming
         //开始
         public bool Start()
         {
-            var load = LoadAssetManager<ILoadAsset>.Instance.loadAsset;
-            //Debug.Log(load);
-            if (load == null)
-                return false;
             m_StartLoad = true;
+
             Action<uint, GameObject> action = (uint id, GameObject obj) =>
             {
                 m_Id = id;
@@ -70,7 +69,7 @@ namespace Chess.LODGroupIJob.Streaming
                 m_Status = m_Obj == null ? AsyncOperationStatus.Failed : AsyncOperationStatus.Succeeded;
                 Completed?.Invoke(this);
             };
-            load.LoadAsync(m_Address, action);
+            m_Loader.LoadAsync(m_Address, action);
             return true;
         }
 
@@ -79,10 +78,7 @@ namespace Chess.LODGroupIJob.Streaming
         {
             if (m_StartLoad == true)
             {
-                var load = LoadAssetManager<ILoadAsset>.Instance.loadAsset;
-                if (load == null)
-                    return;
-                load.UnloadAsset(Id);
+                m_Loader.UnloadAsset(Id);
             }
         }
     }

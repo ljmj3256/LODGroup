@@ -10,7 +10,7 @@ namespace Chess.LODGroupIJob.Utils
         //间隔计算屏占比
         public float cullInterval = 0.1f;
 
-        //是否在编辑器模式Game视图下启动流式加载
+        //是否在编辑器模式Scene视图下启动流式加载
         public bool editorStream = false;
     }
 }

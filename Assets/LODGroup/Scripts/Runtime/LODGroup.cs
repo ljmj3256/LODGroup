@@ -67,7 +67,7 @@ namespace Chess.LODGroupIJob
                 return;
             }
             //编辑器模式下启动了流式加载那么也生效
-            if (!Application.isPlaying && (type != CameraType.Game || !LODSystemConfig.Instance.Config.editorStream))
+            if (!Application.isPlaying && (type == CameraType.Game || !LODSystemConfig.Instance.Config.editorStream))
             {
                 if(calResult.lodLevel != -1)
                     if(m_LODs[calResult.lodLevel].Streaming)
@@ -91,7 +91,7 @@ namespace Chess.LODGroupIJob
                 }
                 return;
             }
-                
+
             var lod = m_LODs[calResult.lodLevel];
             bool result = false;
             result = lod.SetState(true, this, calResult.distance, calResult.lodLevel);
