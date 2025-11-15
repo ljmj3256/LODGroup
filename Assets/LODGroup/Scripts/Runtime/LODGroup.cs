@@ -185,6 +185,15 @@ namespace Chess.LODGroupIJob
             Gizmos.color = tempColor;
 
         }
+
+        public void ClearTempObjects()
+        {
+            foreach (var lod in m_LODs)
+            {
+                if (lod.Streaming)
+                    lod.SetState(false, this, 0f);
+            }
+        }
 #endif
     }
 }
