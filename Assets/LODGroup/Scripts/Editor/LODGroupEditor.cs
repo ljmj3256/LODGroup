@@ -103,8 +103,6 @@ namespace Chess.LODGroupIJob
             EditorGUILayout.BeginHorizontal();
             if (m_LODGroup.exportStreamDir != null && GUILayout.Button("一键流式加载"))
             {
-                m_LODGroup.ClearTempObjects();
-
                 LOD[] lods = m_LODGroup.GetLODs();
                 for(int i = 0; i < lods.Length; i++)
                 {
