@@ -13,13 +13,9 @@ namespace Chess.LODGroupIJob
     public class LODGroupEditor : LODEditorWindow
     {
         SceneCameraManager m_SceneCameraManager;
-
         LODSlider m_LODSlider;
-
         LODGroup m_LODGroup;
-
         GameObject m_SelectObj;
-
         Event m_LastEvent;
 
         //将要删除的renderer
@@ -101,8 +97,14 @@ namespace Chess.LODGroupIJob
                 m_LastEvent.Use();
             }
             EditorGUILayout.BeginHorizontal();
-            if (m_LODGroup.exportStreamDir != null && GUILayout.Button("一键流式加载"))
+            if (GUILayout.Button("一键流式加载"))
             {
+                if (m_LODGroup.exportStreamDir == null)
+                {
+                    EditorUtility.DisplayDialog("一键流式加载", "流式加载资源导出目录未设置，请设置有效流式路径！！！", "确认");
+                    return;
+                }
+
                 LOD[] lods = m_LODGroup.GetLODs();
                 for(int i = 0; i < lods.Length; i++)
                 {
@@ -266,7 +268,7 @@ namespace Chess.LODGroupIJob
                 rd.transform.parent = lodObj.transform;
                 rd.enabled = true;
             }
-            string path  = AssetDatabase.GetAssetPath(m_LODGroup.exportStreamDir);
+            string path = AssetDatabase.GetAssetPath(m_LODGroup.exportStreamDir);
             string savePath = Path.Combine(path, lodObj.name + ".prefab").Replace('\\','/');
             savePath = savePath.Replace("[\\]", "/");
             PrefabUtility.SaveAsPrefabAsset(lodObj, savePath);
