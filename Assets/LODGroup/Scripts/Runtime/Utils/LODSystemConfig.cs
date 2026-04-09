@@ -5,11 +5,12 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-namespace Chess.LODGroupIJob.Utils
+namespace ClientCore.LODGroupIJob.Utils
 {
     public class LODSystemConfig
     {
         static LODSystemConfig _instance;
+
         public static LODSystemConfig Instance
         {
             get
@@ -18,6 +19,7 @@ namespace Chess.LODGroupIJob.Utils
                 {
                     _instance = new LODSystemConfig();
                 }
+
                 return _instance;
             }
         }
@@ -36,6 +38,7 @@ namespace Chess.LODGroupIJob.Utils
                 SaveUniqueConfigAsset(m_Config);
             }
         }
+
         public Config Config
         {
             get
@@ -44,6 +47,7 @@ namespace Chess.LODGroupIJob.Utils
                 {
                     RefreshConfig();
                 }
+
                 return m_Config;
             }
             set

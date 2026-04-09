@@ -2,24 +2,24 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Chess.LODGroupIJob.Utils
+namespace ClientCore.LODGroupIJob.Utils
 {
     [CustomEditor(typeof(Config))]
-    public class ConfigEditor : Editor
+    public class ConfigEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {
-            //»ñÈ¡Ä¿±ê¶ÔÏó
+            //è·å–ç›®æ ‡å¯¹è±¡
             Config config = (Config)target;
 
-            //ÏÔÊ¾½Å±¾ÒıÓÃ£¨¿ÉÑ¡£©
+            //æ˜¾ç¤ºè„šæœ¬å¼•ç”¨ï¼ˆå¯é€‰ï¼‰
             GUI.enabled = false;
             EditorGUILayout.ObjectField("Script", MonoScript.FromScriptableObject(config), typeof(Config), false);
             GUI.enabled = true;
 
             config.asyncLoadNum = EditorGUILayout.IntField("Async Load Num", config.asyncLoadNum);
             config.cullInterval = EditorGUILayout.FloatField("Cull Interval", config.cullInterval);
-            
+
             EditorGUI.BeginChangeCheck();
             config.editorStream = EditorGUILayout.Toggle("Editor Stream", config.editorStream);
 
@@ -28,15 +28,15 @@ namespace Chess.LODGroupIJob.Utils
                 if (config.editorStream)
                     return;
 
-                //¹Ø±Õ±à¼­Æ÷ÏÂÁ÷Ê½£¬½«Á÷Ê½¼ÓÔØµÄ×ÊÔ´È«²¿É¾³ı
-                var lodGroups = GameObject.FindObjectsOfType<LODGroup>();
+                //å…³é—­ç¼–è¾‘å™¨ä¸‹æµå¼ï¼Œå°†æµå¼åŠ è½½çš„èµ„æºå…¨éƒ¨åˆ é™¤
+                var lodGroups = GameObject.FindObjectsOfType<LODGroupStream>();
                 if (lodGroups == null)
                     return;
-                foreach(var g in lodGroups)
+                foreach (var g in lodGroups)
                 {
-                    foreach(var lod in g.GetLODs())
+                    foreach (var lod in g.GetLODs())
                     {
-                        if(lod.Handle != null && lod.Handle.Result != null)
+                        if (lod.Handle != null && lod.Handle.Result != null)
                             GameObject.DestroyImmediate(lod.Handle.Result);
                     }
                 }

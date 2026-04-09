@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Chess.LODGroupIJob.Utils
+namespace ClientCore.LODGroupIJob.Utils
 {
     public class Config : ScriptableObject
     {

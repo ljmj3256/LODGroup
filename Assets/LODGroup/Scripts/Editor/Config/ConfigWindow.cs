@@ -1,17 +1,20 @@
-using Chess.LODGroupIJob.Utils;
+using ClientCore.LODGroupIJob.Utils;
 using UnityEditor;
 using UnityEngine;
-namespace Chess.LODGroupIJob.Config
+
+namespace ClientCore.LODGroupIJob.Config
 {
     public class ConfigWindow : EditorWindow
     {
-        [MenuItem("Chess/LODGroupConfig")]
+        [MenuItem("Toolset/LODGroupStream/LODGroupConfig", false, 450)]
         public static void Init()
         {
             Rect wr = new Rect(0, 0, 200, 80);
-            var windows = (ConfigWindow)EditorWindow.GetWindowWithRect(typeof(ConfigWindow), wr, true, "LODGroupConfig");
+            var windows =
+                (ConfigWindow)EditorWindow.GetWindowWithRect(typeof(ConfigWindow), wr, true, "LODGroupConfig");
             windows.Show();
         }
+
         private void OnGUI()
         {
             var config = LODSystemConfig.Instance.Config;
@@ -27,17 +30,18 @@ namespace Chess.LODGroupIJob.Config
                     return;
 
                 //关闭编辑器下流式，将流式加载的资源全部删除
-                var lodGroups = GameObject.FindObjectsOfType<LODGroup>();
+                var lodGroups = GameObject.FindObjectsOfType<LODGroupStream>();
                 if (lodGroups == null)
                     return;
-                foreach(var g in lodGroups)
+                foreach (var g in lodGroups)
                 {
-                    foreach(var lod in g.GetLODs())
+                    foreach (var lod in g.GetLODs())
                     {
-                        if(lod.Handle != null && lod.Handle.Result != null)
+                        if (lod.Handle != null && lod.Handle.Result != null)
                             GameObject.DestroyImmediate(lod.Handle.Result);
                     }
                 }
+
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
             }

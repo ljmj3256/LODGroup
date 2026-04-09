@@ -1,41 +1,45 @@
-namespace Chess.LODGroupIJob
+namespace ClientCore.LODGroupIJob
 {
     public static class NormalLOD
     {
         //正常模式只有显示和隐藏
-        public static void SetState(bool active, LOD lod, LODGroup lodGroup, int willLOD = -1)
+        public static void SetState(bool active, LOD lod, LODGroupStream lodGroupStream, int willLOD = -1)
         {
             switch (lod.CurrentState)
             {
                 case State.None:
                 case State.UnLoaded:
                 case State.UnLoading:
-                    if (active == true)
+                    if (active)
                     {
-                        ChangeRendererState(active, lod);
-                        lodGroup.OnDisableCurrentLOD(willLOD);
+                        ChangeRendererState(true, lod);
+                        lodGroupStream.OnDisableCurrentLOD(willLOD);
                     }
+
                     break;
                 case State.Loaded:
-                    if (active == false)
+                    if (!active)
                     {
-                        ChangeRendererState(active, lod);
+                        ChangeRendererState(false, lod);
                     }
+
                     break;
             }
         }
+
         public static void ChangeRendererState(bool state, LOD lod)
         {
             if (lod.Renderers == null)
                 return;
             var renderers = lod.Renderers;
             var count = renderers.Length;
-            for (int i = 0; i < count;i++)
+            for (int i = 0; i < count; i++)
             {
                 var rd = renderers[i];
                 if (rd != null)
                     rd.enabled = state;
             }
+
             if (lod.Colliers != null)
             {
                 var colliders = lod.Colliers;
@@ -46,7 +50,7 @@ namespace Chess.LODGroupIJob
                     if (c != null)
                         c.enabled = state;
                 }
-            }  
+            }
 
             lod.CurrentState = state == true ? State.Loaded : State.UnLoaded;
         }

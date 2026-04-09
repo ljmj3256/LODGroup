@@ -1,5 +1,9 @@
 fileFormatVersion: 2
-guid: b5f974be80b5fa54ab559596d9a7c08f
+<<<<<<<< HEAD:Game/Assets/__K2RawArtData/Battle/Effect/fx_animation/MainCity_Train_Base_In.playable.meta
+guid: 6e38f1b0b0edc9f4f87276331ee48ffa
+========
+guid: 8ea57d28607b70a48943bb704926b996
+>>>>>>>> origin/koa_2/master_survivor_dev:Game/Assets/Plugins/ClientCore/LODGroup/Resources/Config/LODGlobalConfig.asset.meta
 NativeFormatImporter:
   externalObjects: {}
   mainObjectFileID: 11400000

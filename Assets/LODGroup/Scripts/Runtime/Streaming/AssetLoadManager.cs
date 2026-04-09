@@ -1,17 +1,21 @@
-using Chess.LODGroupIJob.Utils;
+using System;
 using System.Collections.Generic;
-namespace Chess.LODGroupIJob.Streaming
+using ClientCore.LODGroupIJob.Utils;
+// using ClientCore.ReloadModeSupport;
+
+namespace ClientCore.LODGroupIJob.Streaming
 {
     public class AssetLoadManager
     {
         #region Singleton
 
+        // [ReloadWithValue(null)]
         private static AssetLoadManager _instance;
+
         public static AssetLoadManager Instance
         {
             get
             {
-                
                 if (_instance == null)
                 {
                     _instance = new AssetLoadManager();
@@ -23,97 +27,256 @@ namespace Chess.LODGroupIJob.Streaming
 
         #endregion
 
+        private readonly Action<Handle> m_OnHandleCompleted;
+        private readonly List<Handle> m_loadQueue = new List<Handle>(32);
+
         private AssetLoadManager()
         {
             m_Config = LODSystemConfig.Instance;
+            m_OnHandleCompleted = OnHandleCompleted;
         }
 
         private LODSystemConfig m_Config;
         private int m_LoadCount = 0;
-        private bool m_IsLoading = false;
-        private LinkedList<Handle> m_loadQueue = new LinkedList<Handle>();
 
-        //开始加载
         public Handle LoadAsset(LOD controller, string address, int priority, float distance)
         {
             Handle handle = new Handle(controller, address, priority, distance);
             return handle;
         }
+
         public void Start(Handle handle)
         {
+            if (!IsHandleValid(handle))
+            {
+                return;
+            }
+
+            if (IsQueued(handle))
+            {
+                return;
+            }
+
+            if (m_LoadCount < m_Config.Config.asyncLoadNum)
+            {
+                StartLoadInternal(handle);
+                TryStartQueuedHandles();
+                return;
+            }
+
             InsertHandle(handle);
         }
-        //卸载
+
         public void UnloadAsset(Handle handle)
         {
-            m_loadQueue.Remove(handle);
+            if (handle == null)
+            {
+                return;
+            }
+
+            RemoveQueuedHandle(handle);
             handle.UnloadAsset();
         }
 
-        //加载队列处理
         private void InsertHandle(Handle handle)
         {
-            var node = m_loadQueue.First;
-            while (node != null && node.Value.Priority < handle.Priority)
+            if (!IsHandleValid(handle) || IsQueued(handle))
             {
-                node = node.Next;
+                return;
             }
 
-            while (node != null && node.Value.Priority == handle.Priority && node.Value.Distance < handle.Distance)
+            handle.QueueIndex = m_loadQueue.Count;
+            m_loadQueue.Add(handle);
+            HeapifyUp(handle.QueueIndex);
+        }
+
+        private bool StartLoadInternal(Handle handle)
+        {
+            if (!IsHandleValid(handle))
             {
-                node = node.Next;
+                return false;
             }
 
-            if (node == null)
+            RemoveQueuedHandle(handle);
+            handle.Completed += m_OnHandleCompleted;
+            bool result = handle.Start();
+            if (!result)
             {
-                if (m_IsLoading == true)
-                {
-                    m_loadQueue.AddLast(handle);
-                }
-                else
-                {
-                    StartLoad(handle);
-                }
+                handle.Completed -= m_OnHandleCompleted;
+                return false;
             }
-            else
+
+            m_LoadCount++;
+            return true;
+        }
+
+        private void OnHandleCompleted(Handle handle)
+        {
+            if (handle != null)
             {
-                m_loadQueue.AddBefore(node, handle);
+                handle.Completed -= m_OnHandleCompleted;
+            }
+
+            if (m_LoadCount > 0)
+            {
+                m_LoadCount--;
+            }
+
+            TryStartQueuedHandles();
+        }
+
+        private void TryStartQueuedHandles()
+        {
+            while (m_LoadCount < m_Config.Config.asyncLoadNum)
+            {
+                Handle nextHandle = DequeueValidHandle();
+                if (nextHandle == null)
+                {
+                    return;
+                }
+
+                if (!StartLoadInternal(nextHandle))
+                {
+                    continue;
+                }
             }
         }
 
-        //正式加载
-        private void StartLoad(Handle handle)
+        private Handle DequeueValidHandle()
         {
-            handle.Completed += handle1 =>
+            while (m_loadQueue.Count > 0)
             {
-                m_LoadCount--;
-                m_IsLoading = false;
-                if (m_loadQueue.Count > 0)
+                Handle handle = m_loadQueue[0];
+                RemoveAt(0);
+                if (!IsHandleValid(handle))
                 {
-                    Handle next = m_loadQueue.First.Value;
-                    m_loadQueue.RemoveFirst();
-                    StartLoad(next);
+                    handle?.UnloadAsset();
+                    continue;
                 }
-            };
 
-            bool result = handle.Start();
-
-            if (result)
-            {
-                if (++m_LoadCount == m_Config.Config.asyncLoadNum)
-                {
-                    m_IsLoading = true;
-                    return;
-                }
-                    
+                return handle;
             }
 
-            //加载数量没达到设定继续加载
-            if (m_loadQueue.Count == 0)
+            return null;
+        }
+
+        private void RemoveQueuedHandle(Handle handle)
+        {
+            if (!IsQueued(handle))
+            {
                 return;
-            Handle nextHandle = m_loadQueue.First.Value;
-            m_loadQueue.RemoveFirst();
-            StartLoad(nextHandle);
+            }
+
+            int index = handle.QueueIndex;
+            if (index < 0 || index >= m_loadQueue.Count || !ReferenceEquals(m_loadQueue[index], handle))
+            {
+                handle.QueueIndex = -1;
+                return;
+            }
+
+            RemoveAt(index);
+        }
+
+        private void RemoveAt(int index)
+        {
+            int lastIndex = m_loadQueue.Count - 1;
+            Handle removedHandle = m_loadQueue[index];
+            removedHandle.QueueIndex = -1;
+
+            if (index == lastIndex)
+            {
+                m_loadQueue.RemoveAt(lastIndex);
+                return;
+            }
+
+            Handle lastHandle = m_loadQueue[lastIndex];
+            m_loadQueue[index] = lastHandle;
+            lastHandle.QueueIndex = index;
+            m_loadQueue.RemoveAt(lastIndex);
+
+            if (index > 0 && HasHigherPriority(m_loadQueue[index], m_loadQueue[(index - 1) >> 1]))
+            {
+                HeapifyUp(index);
+            }
+            else
+            {
+                HeapifyDown(index);
+            }
+        }
+
+        private void HeapifyUp(int index)
+        {
+            while (index > 0)
+            {
+                int parentIndex = (index - 1) >> 1;
+                if (!HasHigherPriority(m_loadQueue[index], m_loadQueue[parentIndex]))
+                {
+                    return;
+                }
+
+                Swap(index, parentIndex);
+                index = parentIndex;
+            }
+        }
+
+        private void HeapifyDown(int index)
+        {
+            int count = m_loadQueue.Count;
+            while (true)
+            {
+                int leftChild = (index << 1) + 1;
+                if (leftChild >= count)
+                {
+                    return;
+                }
+
+                int rightChild = leftChild + 1;
+                int bestChild = leftChild;
+                if (rightChild < count && HasHigherPriority(m_loadQueue[rightChild], m_loadQueue[leftChild]))
+                {
+                    bestChild = rightChild;
+                }
+
+                if (!HasHigherPriority(m_loadQueue[bestChild], m_loadQueue[index]))
+                {
+                    return;
+                }
+
+                Swap(index, bestChild);
+                index = bestChild;
+            }
+        }
+
+        private void Swap(int leftIndex, int rightIndex)
+        {
+            Handle left = m_loadQueue[leftIndex];
+            Handle right = m_loadQueue[rightIndex];
+            m_loadQueue[leftIndex] = right;
+            m_loadQueue[rightIndex] = left;
+            right.QueueIndex = leftIndex;
+            left.QueueIndex = rightIndex;
+        }
+
+        private static bool HasHigherPriority(Handle left, Handle right)
+        {
+            if (left.Priority != right.Priority)
+            {
+                return left.Priority < right.Priority;
+            }
+
+            return left.Distance < right.Distance;
+        }
+
+        private static bool IsQueued(Handle handle)
+        {
+            return handle != null && handle.QueueIndex >= 0;
+        }
+
+        private static bool IsHandleValid(Handle handle)
+        {
+            return handle != null &&
+                   !handle.Cancelled &&
+                   handle.Controller != null;
         }
     }
 }
