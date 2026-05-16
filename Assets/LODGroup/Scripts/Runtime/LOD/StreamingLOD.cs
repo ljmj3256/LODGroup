@@ -82,8 +82,13 @@ namespace ClientCore.LODGroupIJob
 #endif
 
                 h.Result = gameObject;
-                gameObject.transform.parent = lodGroupStream.transform;
-                gameObject.transform.localPosition = Vector3.zero;
+
+                var trans = gameObject.transform;
+                trans.SetParent(lodGroupStream.transform);
+                trans.localPosition = Vector3.zero;
+                trans.localScale = Vector3.one;
+                trans.localRotation = Quaternion.identity;
+
                 h.Controller.CurrentState = State.Loaded;
                 
 #if UNITY_EDITOR

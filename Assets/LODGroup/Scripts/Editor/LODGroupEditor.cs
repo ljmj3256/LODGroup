@@ -1733,8 +1733,11 @@ namespace ClientCore.LODGroupIJob.Editor
             }
 
             lodObj.name = assetName;
-            lodObj.transform.parent = m_LODGroup.transform;
-            lodObj.transform.localPosition = Vector3.zero;
+            var lodObjTransform = lodObj.transform;
+            lodObjTransform.SetParent(m_LODGroup.transform);
+            lodObjTransform.localPosition = Vector3.zero;
+            lodObjTransform.localScale = Vector3.one;
+            lodObjTransform.localRotation = Quaternion.identity;
 
             if (m_LODGroup.ExportStreamMode == LODGroupBase.StreamType.Renderers)
             {
@@ -1810,8 +1813,11 @@ namespace ClientCore.LODGroupIJob.Editor
                 obj = PrefabUtility.InstantiatePrefab(obj) as GameObject;
                 PrefabUtility.UnpackPrefabInstance(obj, PrefabUnpackMode.OutermostRoot,
                     InteractionMode.AutomatedAction);
-                obj.transform.parent = m_LODGroup.transform;
-                obj.transform.localPosition = Vector3.zero;
+                var objTransform = obj.transform;
+                objTransform.SetParent(m_LODGroup.transform);
+                objTransform.localPosition = Vector3.zero;
+                objTransform.localScale = Vector3.one;
+                objTransform.localRotation = Quaternion.identity;
 
                 var renderers = obj.GetComponentsInChildren<Renderer>();
                 var colliders = new Collider[renderers.Length];

@@ -10,6 +10,16 @@ namespace ClientCore.LODGroupIJob
         {
             public int FullPathHash;
             public float NormalizedTime;
+            public float Weight;
+        }
+
+        private struct AnimatorParamSnapshot
+        {
+            public int NameHash;
+            public AnimatorControllerParameterType Type;
+            public float FloatValue;
+            public int IntValue;
+            public bool BoolValue;
         }
 
         [SerializeField] private SkinnedMeshRenderer _skinnedMeshRenderer;
@@ -106,15 +116,41 @@ namespace ClientCore.LODGroupIJob
                 snapshots[i] = new AnimatorLayerSnapshot
                 {
                     FullPathHash = state.fullPathHash,
-                    NormalizedTime = state.normalizedTime
+                    NormalizedTime = state.normalizedTime,
+                    Weight = i > 0 ? animator.GetLayerWeight(i) : 1f
                 };
+            }
+
+            // 记录所有参数
+            var parameters = animator.parameters;
+            var paramSnapshots = new AnimatorParamSnapshot[parameters.Length];
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                var p = parameters[i];
+                paramSnapshots[i].NameHash = p.nameHash;
+                paramSnapshots[i].Type = p.type;
+                switch (p.type)
+                {
+                    case AnimatorControllerParameterType.Bool:
+                        paramSnapshots[i].BoolValue = animator.GetBool(p.nameHash);
+                        break;
+                    case AnimatorControllerParameterType.Float:
+                        paramSnapshots[i].FloatValue = animator.GetFloat(p.nameHash);
+                        break;
+                    case AnimatorControllerParameterType.Int:
+                        paramSnapshots[i].IntValue = animator.GetInteger(p.nameHash);
+                        break;
+                }
             }
 
             animator.Rebind();
 
+            // 恢复层状态与权重
             for (int i = 0; i < layerCount; i++)
             {
                 var snapshot = snapshots[i];
+                if (i > 0)
+                    animator.SetLayerWeight(i, snapshot.Weight);
                 if (snapshot.FullPathHash != 0)
                 {
                     animator.Play(snapshot.FullPathHash, i, snapshot.NormalizedTime % 1f);
@@ -122,7 +158,23 @@ namespace ClientCore.LODGroupIJob
                 }
             }
 
-           
+            // 恢复参数
+            for (int i = 0; i < paramSnapshots.Length; i++)
+            {
+                var ps = paramSnapshots[i];
+                switch (ps.Type)
+                {
+                    case AnimatorControllerParameterType.Bool:
+                        animator.SetBool(ps.NameHash, ps.BoolValue);
+                        break;
+                    case AnimatorControllerParameterType.Float:
+                        animator.SetFloat(ps.NameHash, ps.FloatValue);
+                        break;
+                    case AnimatorControllerParameterType.Int:
+                        animator.SetInteger(ps.NameHash, ps.IntValue);
+                        break;
+                }
+            }
         }
 
         // 递归查找Transform树中的节点
