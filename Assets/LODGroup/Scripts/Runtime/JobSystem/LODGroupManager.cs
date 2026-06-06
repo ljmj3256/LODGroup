@@ -115,18 +115,17 @@ namespace ClientCore.LODGroupIJob.JobSystem
             int[] layerMasks,
             TransformSnapshot[] transformSnapshots)
         {
-            OnDisable(ref mode);
-
             int count = lodGroups.Count;
             mode.valid = count > 0;
             if (!mode.valid)
             {
+                OnDisable(ref mode);
                 return;
             }
 
-            mode.bounds = new NativeArray<Bounds>(count, Allocator.Persistent);
-            mode.lodRelative = new NativeArray<Float8>(count, Allocator.Persistent);
-            mode.result = new NativeArray<JobResult>(count, Allocator.Persistent);
+            EnsureArrayCapacity(ref mode.bounds, count);
+            EnsureArrayCapacity(ref mode.lodRelative, count);
+            EnsureArrayCapacity(ref mode.result, count);
 
 #if UNITY_EDITOR
             mode.openBuffer = Application.isPlaying;
@@ -183,6 +182,17 @@ namespace ClientCore.LODGroupIJob.JobSystem
             {
                 values.Dispose();
             }
+        }
+
+        private static void EnsureArrayCapacity<T>(ref NativeArray<T> values, int count) where T : struct
+        {
+            if (values.IsCreated && values.Length >= count)
+            {
+                return;
+            }
+
+            DisposeArray(ref values);
+            values = new NativeArray<T>(LODGroupManager.CalculateCapacity(count), Allocator.Persistent);
         }
 
         private static int BuildLayerMask(LODGroupBase lodGroup)
@@ -265,6 +275,7 @@ namespace ClientCore.LODGroupIJob.JobSystem
             public bool hasEverProducedVisibleResult;
 
             public NativeArray<int> relevantIndices;
+            public int relevantCount;
             public NativeArray<JobResult> result;
 
             public void Dispose()
@@ -278,6 +289,8 @@ namespace ClientCore.LODGroupIJob.JobSystem
                 {
                     result.Dispose();
                 }
+
+                relevantCount = 0;
             }
         }
 
@@ -391,7 +404,7 @@ namespace ClientCore.LODGroupIJob.JobSystem
                 var camera = m_FrameCameras[i];
                 var data = GetOrCreateCameraData(camera);
                 bool cameraDataDirty = EnsureCameraBuffers(camera, data);
-                bool boundsChanged = SyncWorldBounds(data.relevantIndices);
+                bool boundsChanged = SyncWorldBounds(data);
                 bool shouldCalculate = ShouldRecalculateCamera(camera, data, cameraDataDirty || boundsChanged);
                 if (!shouldCalculate)
                 {
@@ -420,11 +433,11 @@ namespace ClientCore.LODGroupIJob.JobSystem
                 return;
             }
 
-            m_ObjectLayerMasks = new int[count];
-            m_TransformSnapshots = new TransformSnapshot[count];
-            m_FinalCameraTypes = new CameraType[count];
-            m_LastAppliedLODLevels = new int[count];
-            m_LastAppliedCameraTypes = new CameraType[count];
+            EnsureArrayCapacity(ref m_ObjectLayerMasks, count);
+            EnsureArrayCapacity(ref m_TransformSnapshots, count);
+            EnsureArrayCapacity(ref m_FinalCameraTypes, count);
+            EnsureArrayCapacity(ref m_LastAppliedLODLevels, count);
+            EnsureArrayCapacity(ref m_LastAppliedCameraTypes, count);
 
             for (int i = 0; i < count; i++)
             {
@@ -435,6 +448,40 @@ namespace ClientCore.LODGroupIJob.JobSystem
 
             m_JobValueView.RefreshCalculate(ref m_JobValueMode, m_LODGroups, m_ObjectLayerMasks, m_TransformSnapshots);
             InvalidateAllCameraBuffers();
+        }
+
+        private static void EnsureArrayCapacity<T>(ref T[] values, int count)
+        {
+            if (values.Length < count)
+            {
+                values = new T[CalculateCapacity(count)];
+            }
+        }
+
+        public static int CalculateCapacity(int count)
+        {
+            int capacity = 4;
+            while (capacity < count)
+            {
+                capacity <<= 1;
+            }
+
+            return capacity;
+        }
+
+        private static void EnsureNativeArrayCapacity<T>(ref NativeArray<T> values, int count) where T : struct
+        {
+            if (values.IsCreated && values.Length >= count)
+            {
+                return;
+            }
+
+            if (values.IsCreated)
+            {
+                values.Dispose();
+            }
+
+            values = new NativeArray<T>(CalculateCapacity(count), Allocator.Persistent);
         }
 
         private void RebuildLODGroupList()
@@ -547,8 +594,7 @@ namespace ClientCore.LODGroupIJob.JobSystem
         {
             EnsureCameraResultBuffer(data);
 
-            bool needsRefresh = !data.relevantIndices.IsCreated ||
-                                data.lastCullingMask != camera.cullingMask ||
+            bool needsRefresh = data.lastCullingMask != camera.cullingMask ||
                                 !data.hasCalculated;
             if (!needsRefresh)
             {
@@ -556,7 +602,7 @@ namespace ClientCore.LODGroupIJob.JobSystem
             }
 
             RebuildRelevantIndices(camera, data);
-            ClearResults(data.result);
+            ClearResults(data.result, m_LODGroups.Count);
             data.hasCalculated = false;
             data.lastCullTime = -1f;
             data.lastCullingMask = camera.cullingMask;
@@ -566,7 +612,7 @@ namespace ClientCore.LODGroupIJob.JobSystem
         private void EnsureCameraResultBuffer(CameraCullData data)
         {
             int count = m_LODGroups.Count;
-            if (data.result.IsCreated && data.result.Length == count)
+            if (data.result.IsCreated && data.result.Length >= count)
             {
                 return;
             }
@@ -576,20 +622,16 @@ namespace ClientCore.LODGroupIJob.JobSystem
                 data.result.Dispose();
             }
 
-            data.result = new NativeArray<JobResult>(count, Allocator.Persistent);
-            ClearResults(data.result);
+            data.result = new NativeArray<JobResult>(CalculateCapacity(count), Allocator.Persistent);
+            ClearResults(data.result, count);
         }
 
         private void RebuildRelevantIndices(Camera camera, CameraCullData data)
         {
-            if (data.relevantIndices.IsCreated)
-            {
-                data.relevantIndices.Dispose();
-            }
-
             int cullingMask = camera.cullingMask;
             int relevantCount = 0;
-            for (int i = 0; i < m_ObjectLayerMasks.Length; i++)
+            int count = m_LODGroups.Count;
+            for (int i = 0; i < count; i++)
             {
                 if ((m_ObjectLayerMasks[i] & cullingMask) != 0)
                 {
@@ -597,9 +639,15 @@ namespace ClientCore.LODGroupIJob.JobSystem
                 }
             }
 
-            data.relevantIndices = new NativeArray<int>(relevantCount, Allocator.Persistent);
+            data.relevantCount = relevantCount;
+            if (relevantCount == 0)
+            {
+                return;
+            }
+
+            EnsureNativeArrayCapacity(ref data.relevantIndices, relevantCount);
             int writeIndex = 0;
-            for (int i = 0; i < m_ObjectLayerMasks.Length; i++)
+            for (int i = 0; i < count; i++)
             {
                 if ((m_ObjectLayerMasks[i] & cullingMask) != 0)
                 {
@@ -646,12 +694,12 @@ namespace ClientCore.LODGroupIJob.JobSystem
             return false;
         }
 
-        private bool SyncWorldBounds(NativeArray<int> relevantIndices)
+        private bool SyncWorldBounds(CameraCullData data)
         {
             bool boundsChanged = false;
-            for (int i = 0; i < relevantIndices.Length; i++)
+            for (int i = 0; i < data.relevantCount; i++)
             {
-                int objectIndex = relevantIndices[i];
+                int objectIndex = data.relevantIndices[i];
                 var lodGroup = m_LODGroups[objectIndex];
                 if (lodGroup == null)
                 {
@@ -676,7 +724,7 @@ namespace ClientCore.LODGroupIJob.JobSystem
 
         private void ExecuteCameraJob(Camera camera, CameraCullData data)
         {
-            if (data.relevantIndices.Length == 0)
+            if (data.relevantCount == 0)
             {
                 return;
             }
@@ -689,7 +737,7 @@ namespace ClientCore.LODGroupIJob.JobSystem
                 QualitySettings.lodBias,
                 out float preRelative);
             // IJobParallelFor can only write to the scheduled job index safely.
-            var scheduledResults = new NativeArray<JobResult>(data.relevantIndices.Length, Allocator.TempJob);
+            var scheduledResults = new NativeArray<JobResult>(data.relevantCount, Allocator.TempJob);
             try
             {
                 var job = new LODCalculateJob
@@ -706,10 +754,10 @@ namespace ClientCore.LODGroupIJob.JobSystem
                     outputResults = scheduledResults
                 };
 
-                JobHandle jobHandle = job.Schedule(data.relevantIndices.Length, 30);
+                JobHandle jobHandle = job.Schedule(data.relevantCount, 30);
                 jobHandle.Complete();
 
-                for (int i = 0; i < data.relevantIndices.Length; i++)
+                for (int i = 0; i < data.relevantCount; i++)
                 {
                     data.result[data.relevantIndices[i]] = scheduledResults[i];
                 }
@@ -762,8 +810,8 @@ namespace ClientCore.LODGroupIJob.JobSystem
             }
 
             bool preferSceneViewResults = ShouldPreferSceneViewResults();
-            ClearResults(m_JobValueMode.result);
-            for (int i = 0; i < m_FinalCameraTypes.Length; i++)
+            ClearResults(m_JobValueMode.result, m_LODGroups.Count);
+            for (int i = 0; i < m_LODGroups.Count; i++)
             {
                 m_FinalCameraTypes[i] = CameraType.Game;
             }
@@ -776,7 +824,7 @@ namespace ClientCore.LODGroupIJob.JobSystem
                     continue;
                 }
 
-                for (int i = 0; i < data.relevantIndices.Length; i++)
+                for (int i = 0; i < data.relevantCount; i++)
                 {
                     int objectIndex = data.relevantIndices[i];
                     var candidateResult = data.result[objectIndex];
@@ -813,16 +861,7 @@ namespace ClientCore.LODGroupIJob.JobSystem
             foreach (var pair in m_CullData)
             {
                 var data = pair.Value;
-                if (data.relevantIndices.IsCreated)
-                {
-                    data.relevantIndices.Dispose();
-                }
-
-                if (data.result.IsCreated)
-                {
-                    data.result.Dispose();
-                }
-
+                data.relevantCount = 0;
                 data.hasCalculated = false;
                 data.lastCullTime = -1f;
                 data.lastCullingMask = int.MinValue;
@@ -887,9 +926,9 @@ namespace ClientCore.LODGroupIJob.JobSystem
             return data;
         }
 
-        private static void ClearResults(NativeArray<JobResult> results)
+        private static void ClearResults(NativeArray<JobResult> results, int count)
         {
-            for (int i = 0; i < results.Length; i++)
+            for (int i = 0; i < count; i++)
             {
                 results[i] = JobResult.Culled;
             }
@@ -987,7 +1026,7 @@ namespace ClientCore.LODGroupIJob.JobSystem
                     !data.activeThisFrame ||
                     !data.hasCalculated ||
                     !data.relevantIndices.IsCreated ||
-                    data.relevantIndices.Length == 0)
+                    data.relevantCount == 0)
                 {
                     continue;
                 }
@@ -1045,7 +1084,7 @@ namespace ClientCore.LODGroupIJob.JobSystem
                 return false;
             }
 
-            for (int i = 0; i < data.relevantIndices.Length; i++)
+            for (int i = 0; i < data.relevantCount; i++)
             {
                 if (data.result[data.relevantIndices[i]].lodLevel >= 0)
                 {

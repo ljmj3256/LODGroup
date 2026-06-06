@@ -75,7 +75,9 @@ namespace ClientCore.LODGroupIJob.Streaming
             }
 
             RemoveQueuedHandle(handle);
+            ReleaseAsyncSlot(handle);
             handle.UnloadAsset();
+            TryStartQueuedHandles();
         }
 
         private void InsertHandle(Handle handle)
@@ -98,30 +100,54 @@ namespace ClientCore.LODGroupIJob.Streaming
             }
 
             RemoveQueuedHandle(handle);
-            handle.Completed += m_OnHandleCompleted;
-            bool result = handle.Start();
-            if (!result)
+            AcquireAsyncSlot(handle);
+            bool result;
+            try
             {
-                handle.Completed -= m_OnHandleCompleted;
+                result = handle.Start();
+            }
+            catch
+            {
+                ReleaseAsyncSlot(handle);
                 return false;
             }
 
-            m_LoadCount++;
+            if (!result)
+            {
+                ReleaseAsyncSlot(handle);
+                return false;
+            }
+
             return true;
+        }
+
+        private void AcquireAsyncSlot(Handle handle)
+        {
+            if (handle.IsHoldingAsyncSlot)
+            {
+                return;
+            }
+
+            handle.IsHoldingAsyncSlot = true;
+            handle.BeforeCompleted += m_OnHandleCompleted;
+            m_LoadCount++;
+        }
+
+        private void ReleaseAsyncSlot(Handle handle)
+        {
+            if (handle == null || !handle.IsHoldingAsyncSlot)
+            {
+                return;
+            }
+
+            handle.IsHoldingAsyncSlot = false;
+            handle.BeforeCompleted -= m_OnHandleCompleted;
+            m_LoadCount--;
         }
 
         private void OnHandleCompleted(Handle handle)
         {
-            if (handle != null)
-            {
-                handle.Completed -= m_OnHandleCompleted;
-            }
-
-            if (m_LoadCount > 0)
-            {
-                m_LoadCount--;
-            }
-
+            ReleaseAsyncSlot(handle);
             TryStartQueuedHandles();
         }
 

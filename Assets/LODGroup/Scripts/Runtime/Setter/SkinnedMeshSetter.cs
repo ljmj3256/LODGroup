@@ -1,4 +1,4 @@
-using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace ClientCore.LODGroupIJob
@@ -25,6 +25,11 @@ namespace ClientCore.LODGroupIJob
         [SerializeField] private SkinnedMeshRenderer _skinnedMeshRenderer;
         [SerializeField] private string _rootBoneName;
         [SerializeField] private string[] _bonesNodeName;
+        
+        private Dictionary<string, Transform> _nodeMap = null;
+
+        private static readonly ObjectPool<Dictionary<string, Transform>> _dataPool =
+            new ObjectPool<Dictionary<string, Transform>>();
 
         void Awake()
         {
@@ -53,28 +58,52 @@ namespace ClientCore.LODGroupIJob
         }
 #endif
 
-        public void RecoverFromCacheData()
+        private void CacheAllNode(Transform root)
+        {
+            foreach(Transform child in root)
+            {
+                var nodeName = child.name;
+                if (!_nodeMap.TryGetValue(nodeName, out _)) 
+                    _nodeMap[nodeName] = child;
+
+                CacheAllNode(child);
+            }
+        }
+
+        public void RecoverFromCacheData(bool forceUpdate = false)
         {
             if (_skinnedMeshRenderer)
             {
-                var root = transform.GetComponentInParent<LODGroupBase>();
+                var root = forceUpdate
+                    ? transform.GetComponentInParent<LODGroupBase>(true)
+                    : transform.GetComponentInParent<LODGroupBase>();
                 if (!root)
                     return;
 
                 if (_bonesNodeName != null)
                 {
-                    Transform[] bones = new Transform[_bonesNodeName.Length];
-                    Transform rootTrans = root.transform;
+                    // 缓存目标节点数据
+                    _nodeMap = _dataPool.TakeOut();
+                    _nodeMap.Clear();
+
+                    var rootTrans = root.transform;
+                    CacheAllNode(rootTrans);
+
+                    // 恢复骨骼节点数据
+                    var bones = _skinnedMeshRenderer.bones;
+                    Transform[] bones1 = bones != null && bones.Length >= _bonesNodeName.Length
+                        ? bones
+                        : new Transform[_bonesNodeName.Length];
                     for (int i = 0; i < _bonesNodeName.Length; i++)
                     {
-                        bones[i] = FindNode(rootTrans, _bonesNodeName[i]);
+                        bones1[i] = FindNode(_bonesNodeName[i]);
                     }
 
-                    _skinnedMeshRenderer.bones = bones;
+                    _skinnedMeshRenderer.bones = bones1;
                 }
 
                 // 查找Root Bone
-                Transform rootBone = FindNode(root.transform, _rootBoneName);
+                Transform rootBone = FindNode(_rootBoneName);
                 if (rootBone)
                 {
                     // 设置Root Bone
@@ -92,6 +121,13 @@ namespace ClientCore.LODGroupIJob
                 else
                 {
                     RebindAnimator(transform);
+                }
+
+                // 数据已恢复
+                if (_nodeMap != null)
+                {
+                    _nodeMap.Clear();
+                    _dataPool.TakeBack(_nodeMap);
                 }
             }
         }
@@ -178,25 +214,29 @@ namespace ClientCore.LODGroupIJob
         }
 
         // 递归查找Transform树中的节点
-        private Transform FindNode(Transform parent, string boneName)
+        private Transform FindNode(string boneName)
         {
-            // 在当前Transform中查找
-            if (parent.name == boneName)
-            {
-                return parent;
-            }
+            if (string.IsNullOrEmpty(boneName))
+                return null;
 
-            // 遍历子Transform
-            foreach (Transform child in parent)
-            {
-                Transform found = FindNode(child, boneName);
-                if (found)
-                {
-                    return found;
-                }
-            }
-
-            return null;
+            _nodeMap.TryGetValue(boneName, out var trans);
+            return trans;
         }
+
+#if UNITY_EDITOR
+        [ContextMenu("Execute")]
+        public void CacheSelf()
+        {
+            var skinRenderer = GetComponent<SkinnedMeshRenderer>();
+            if (skinRenderer != null)
+                CachePropertyData(skinRenderer);
+        }
+        
+        [ContextMenu("Recover")]
+        public void RecoverSelf()
+        {
+            RecoverFromCacheData();
+        }
+#endif
     }
 }

@@ -15,6 +15,7 @@ namespace ClientCore.LODGroupIJob.Streaming
     [Serializable]
     public class Handle
     {
+        public event Action<Handle> BeforeCompleted;
         public event Action<Handle> Completed;
 
         private LOD m_Controller;
@@ -60,6 +61,8 @@ namespace ClientCore.LODGroupIJob.Streaming
             get;
             set;
         } = -1;
+
+        internal bool IsHoldingAsyncSlot;
 
         #endregion
 
@@ -116,12 +119,14 @@ namespace ClientCore.LODGroupIJob.Streaming
                 {
                     m_Obj = null;
                     m_Status = AsyncOperationStatus.Failed;
+                    BeforeCompleted?.Invoke(this);
                     Completed?.Invoke(this);
                     return;
                 }
 
                 m_Obj = obj;
                 m_Status = m_Obj == null ? AsyncOperationStatus.Failed : AsyncOperationStatus.Succeeded;
+                BeforeCompleted?.Invoke(this);
                 Completed?.Invoke(this);
             };
             m_Id = m_Loader.LoadAsync(m_Controller, action);
